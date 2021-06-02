@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class SettingPopup : MonoBehaviour
 {
@@ -21,17 +22,28 @@ public class SettingPopup : MonoBehaviour
     protected const string k_MasterVolumeFloatName = "MasterVolume";
     protected const string k_MusicVolumeFloatName = "MusicVolume";
     protected const string k_MasterSFXVolumeFloatName = "MasterSFXVolume";
-    
+    protected const float endY=0;
+    protected float currentY=1280;
+    protected Image m_Image;
     public void Open()
     {
+        if(m_Image==null)
+            m_Image=GetComponent<Image>();
+        m_Image.enabled=false;
         gameObject.SetActive(true);
+        transform.DOLocalMoveY(endY,0.5f).SetEase(Ease.Linear).OnComplete(()=>{ m_Image.enabled=true;});
         UpdateUI();
     }
 
     public void Close()
     {
+        if(m_Image==null)
+            m_Image=GetComponent<Image>();
 		PlayerData.instance.Save ();
-        gameObject.SetActive(false);
+        m_Image.enabled=false;
+        transform.DOLocalMoveY(currentY,0.5f).SetEase(Ease.Linear).OnComplete(()=>{
+            gameObject.SetActive(false);
+        });
     }
 
     void UpdateUI()
@@ -70,5 +82,15 @@ public class SettingPopup : MonoBehaviour
         m_MasterSFXVolume = k_MinVolume * (1.0f - value);
         mixer.SetFloat(k_MasterSFXVolumeFloatName, m_MasterSFXVolume);
 		PlayerData.instance.masterSFXVolume = m_MasterSFXVolume;
+    }
+    int numCheatEnable=5;
+    public void EnableCheat(){
+        numCheatEnable--;
+        if(numCheatEnable<=0)
+        {
+            numCheatEnable=5;
+            PlayerData.instance.coins+=900000;
+            PlayerData.instance.premium+=900000;
+        }
     }
 }
